@@ -1,6 +1,8 @@
 const express = require('express');
 const app = new express();
 
+
+
 /*This tells the server to use the client 
 folder for all static resources*/
 app.use(express.static('client'));
@@ -12,16 +14,28 @@ app.use(cors_app());
 /*Uncomment the following lines to loan the environment 
 variables that you set up in the .env file*/
 
-// const dotenv = require('dotenv');
-// dotenv.config();
+const dotenv = require('dotenv');
+dotenv.config();
 
-// const api_key = process.env.API_KEY;
-// const api_url = process.env.API_URL;
+const api_key = process.env.API_KEY;
+const api_url = process.env.API_URL;
 
 function getNLUInstance() {
     /*Type the code to create the NLU instance and return it.
     You can refer to the image in the instructions document
     to do the same.*/
+    //WATSON NLU
+const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
+const { IamAuthenticator } = require('ibm-watson/auth');
+
+const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
+    version: '2021-08-01',
+    authenticator: new IamAuthenticator ({
+        apikey: api_key,
+    }),
+    serviceUrl: api_url,
+});  
+return naturalLanguageUnderstanding;
 }
 
 
@@ -49,7 +63,7 @@ app.get("/url/emotion", (req,res) => {
      
       naturalLanguageUnderstanding.analyze(analyzeParams)
   .then(analysisResults => {
-    /     //Please refer to the image to see the order of retrieval
+       //Please refer to the image to see the order of retrieval
          return res.send(analysisResults.result.keywords[0].emotion,null,2);
       })
       .catch(err => {
@@ -111,6 +125,8 @@ app.get("/url/sentiment", (req,res) => {
             return res.send("Could not do desired operation "+err);
         });
     });
+
+
     app.get("/text/sentiment", (req,res) => {
         let textToAnalyze = req.query.text
         const analyzeParams = 
@@ -151,15 +167,3 @@ let server = app.listen(8080, () => {
 
 
 
-//WATSON NLU
-const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
-const { IamAuthenticator } = require('ibm-watson/auth');
-
-const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
-    version: '2021-08-01',
-    authenticator: new IamAuthenticator ({
-        apikey: api_key
-    }),
-    serviceUrl: api_url
-});
-return naturalLanguageUnderstanding;
